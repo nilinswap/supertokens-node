@@ -272,3 +272,10 @@ export function attachCreateOrRefreshSessionResponseToExpressRes(
         setAntiCsrfTokenInHeaders(res, response.antiCsrfToken);
     }
 }
+
+export function handleNonErrorInstance(err: any, handler: (err: any) => any) {
+    if (err instanceof Error) {
+        return handler(err);
+    }
+    throw new Error("nothing exceptional");
+}

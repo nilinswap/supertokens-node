@@ -19,6 +19,7 @@ import { getActualClientIdFromDevelopmentClientId } from "../api/implementation"
 import SuperTokens from "../../../supertokens";
 import { APPLE_REDIRECT_HANDLER } from "../constants";
 import verifyAppleToken from "verify-apple-id-token";
+import { handleNonErrorInstance } from "../../../recipe/session/utils";
 
 type TypeThirdPartyProviderAppleConfig = {
     clientId: string;
@@ -59,9 +60,11 @@ export default function Apple(config: TypeThirdPartyProviderAppleConfig): TypePr
             config.clientSecret.privateKey
         );
     } catch (error) {
-        throw new STError({
-            type: STError.BAD_INPUT_ERROR,
-            message: error.message,
+        handleNonErrorInstance(error, async (error: any) => {
+            throw new STError({
+                type: STError.BAD_INPUT_ERROR,
+                message: error.message,
+            });
         });
     }
 

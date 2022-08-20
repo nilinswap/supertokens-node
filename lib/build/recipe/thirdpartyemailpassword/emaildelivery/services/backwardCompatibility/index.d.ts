@@ -28,12 +28,8 @@ export default class BackwardCompatibilityService
         }
     );
     sendEmail: (
-        input:
-            | (import("../../../../emailverification/types").TypeEmailVerificationEmailDeliveryInput & {
-                  userContext: any;
-              })
-            | (import("../../../../emailpassword/types").TypeEmailPasswordPasswordResetEmailDeliveryInput & {
-                  userContext: any;
-              })
+        input: TypeThirdPartyEmailPasswordEmailDeliveryInput & {
+            userContext: any;
+        }
     ) => Promise<void>;
 }

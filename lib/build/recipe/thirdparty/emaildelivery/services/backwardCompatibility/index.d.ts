@@ -17,7 +17,7 @@ export default class BackwardCompatibilityService implements EmailDeliveryInterf
         }
     );
     sendEmail: (
-        input: import("../../../../emailverification/types").TypeEmailVerificationEmailDeliveryInput & {
+        input: TypeThirdPartyEmailDeliveryInput & {
             userContext: any;
         }
     ) => Promise<void>;

@@ -27,6 +27,7 @@ import NormalisedURLPath from "../../normalisedURLPath";
 import { logDebugMessage } from "../../logger";
 import { BaseResponse } from "../../framework/response";
 import { BaseRequest } from "../../framework/request";
+import { handleNonErrorInstance } from "../session/utils";
 
 export class HandshakeInfo {
     constructor(
@@ -223,11 +224,13 @@ export default function getRecipeInterface(
                     res
                 );
             } catch (err) {
-                if (err.type === STError.UNAUTHORISED) {
-                    logDebugMessage("getSession: Clearing cookies because of UNAUTHORISED response");
-                    clearSessionFromCookie(config, res);
-                }
-                throw err;
+                return handleNonErrorInstance(err, (err: any) => {
+                    if (err.type === STError.UNAUTHORISED) {
+                        logDebugMessage("getSession: Clearing cookies because of UNAUTHORISED response");
+                        clearSessionFromCookie(config, res);
+                    }
+                    throw err;
+                });
             }
         },
 
@@ -281,16 +284,18 @@ export default function getRecipeInterface(
                     res
                 );
             } catch (err) {
-                if (
-                    (err.type === STError.UNAUTHORISED && err.payload.clearCookies) ||
-                    err.type === STError.TOKEN_THEFT_DETECTED
-                ) {
-                    logDebugMessage(
-                        "refreshSession: Clearing cookies because of UNAUTHORISED or TOKEN_THEFT_DETECTED response"
-                    );
-                    clearSessionFromCookie(config, res);
-                }
-                throw err;
+                return handleNonErrorInstance(err, (err: any) => {
+                    if (
+                        (err.type === STError.UNAUTHORISED && err.payload.clearCookies) ||
+                        err.type === STError.TOKEN_THEFT_DETECTED
+                    ) {
+                        logDebugMessage(
+                            "refreshSession: Clearing cookies because of UNAUTHORISED or TOKEN_THEFT_DETECTED response"
+                        );
+                        clearSessionFromCookie(config, res);
+                    }
+                    throw err;
+                });
             }
         },
 

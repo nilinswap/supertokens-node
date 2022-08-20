@@ -19,6 +19,7 @@ import { cdiSupported } from "./version";
 import NormalisedURLDomain from "./normalisedURLDomain";
 import NormalisedURLPath from "./normalisedURLPath";
 import { PROCESS_STATE, ProcessState } from "./processState";
+import { handleNonErrorInstance } from "./recipe/session/utils";
 
 export class Querier {
     private static initCalled = false;
@@ -262,23 +263,29 @@ export class Querier {
             }
             return response.data;
         } catch (err) {
-            if (err.message !== undefined && err.message.includes("ECONNREFUSED")) {
-                return await this.sendRequestHelper(path, method, axiosFunction, numberOfTries - 1);
-            }
-            if (err.response !== undefined && err.response.status !== undefined && err.response.data !== undefined) {
-                throw new Error(
-                    "SuperTokens core threw an error for a " +
-                        method +
-                        " request to path: '" +
-                        path.getAsStringDangerous() +
-                        "' with status code: " +
-                        err.response.status +
-                        " and message: " +
-                        err.response.data
-                );
-            } else {
-                throw err;
-            }
+            handleNonErrorInstance(err, async (err: any) => {
+                if (err.message !== undefined && err.message.includes("ECONNREFUSED")) {
+                    return await this.sendRequestHelper(path, method, axiosFunction, numberOfTries - 1);
+                }
+                if (
+                    err.response !== undefined &&
+                    err.response.status !== undefined &&
+                    err.response.data !== undefined
+                ) {
+                    throw new Error(
+                        "SuperTokens core threw an error for a " +
+                            method +
+                            " request to path: '" +
+                            path.getAsStringDangerous() +
+                            "' with status code: " +
+                            err.response.status +
+                            " and message: " +
+                            err.response.data
+                    );
+                } else {
+                    throw err;
+                }
+            });
         }
     };
 }

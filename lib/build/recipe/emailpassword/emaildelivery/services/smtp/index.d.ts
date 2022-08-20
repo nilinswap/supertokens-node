@@ -7,12 +7,8 @@ export default class SMTPService implements EmailDeliveryInterface<TypeEmailPass
     private emailVerificationSMTPService;
     constructor(config: TypeInput<TypeEmailPasswordEmailDeliveryInput>);
     sendEmail: (
-        input:
-            | (import("../../../../emailverification/types").TypeEmailVerificationEmailDeliveryInput & {
-                  userContext: any;
-              })
-            | (import("../../../types").TypeEmailPasswordPasswordResetEmailDeliveryInput & {
-                  userContext: any;
-              })
+        input: TypeEmailPasswordEmailDeliveryInput & {
+            userContext: any;
+        }
     ) => Promise<void>;
 }

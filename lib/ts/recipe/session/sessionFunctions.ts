@@ -21,6 +21,7 @@ import NormalisedURLPath from "../../normalisedURLPath";
 import { Helpers } from "./recipeImplementation";
 import { maxVersion } from "../../utils";
 import { logDebugMessage } from "../../logger";
+import { handleNonErrorInstance } from "./utils";
 
 /**
  * @description call this to "login" a user.
@@ -102,48 +103,50 @@ export async function getSession(
              * if error type is not TRY_REFRESH_TOKEN, we return the
              * error to the user
              */
-            if (err.type !== STError.TRY_REFRESH_TOKEN) {
-                throw err;
-            }
-            /**
-             * if it comes here, it means token verification has failed.
-             * It may be due to:
-             *  - signing key was updated and this token was signed with new key
-             *  - access token is actually expired
-             *  - access token was signed with the older signing key
-             *
-             * if access token is actually expired, we don't need to call core and
-             * just return TRY_REFRESH_TOKEN to the client
-             *
-             * if access token creation time is after this signing key was created
-             * we need to call core as there are chances that the token
-             * was signed with the updated signing key
-             *
-             * if access token creation time is before oldest signing key was created,
-             * so if foundASigningKeyThatIsOlderThanTheAccessToken is still false after
-             * the loop we just return TRY_REFRESH_TOKEN
-             */
-            let payload;
-            try {
-                payload = getPayloadWithoutVerifiying(accessToken);
-            } catch (_) {
-                throw err;
-            }
-            if (payload === undefined) {
-                throw err;
-            }
+            const timeCreated = handleNonErrorInstance(err, async (err: any) => {
+                if (err.type !== STError.TRY_REFRESH_TOKEN) {
+                    throw err;
+                }
+                /**
+                 * if it comes here, it means token verification has failed.
+                 * It may be due to:
+                 *  - signing key was updated and this token was signed with new key
+                 *  - access token is actually expired
+                 *  - access token was signed with the older signing key
+                 *
+                 * if access token is actually expired, we don't need to call core and
+                 * just return TRY_REFRESH_TOKEN to the client
+                 *
+                 * if access token creation time is after this signing key was created
+                 * we need to call core as there are chances that the token
+                 * was signed with the updated signing key
+                 *
+                 * if access token creation time is before oldest signing key was created,
+                 * so if foundASigningKeyThatIsOlderThanTheAccessToken is still false after
+                 * the loop we just return TRY_REFRESH_TOKEN
+                 */
+                let payload;
+                try {
+                    payload = getPayloadWithoutVerifiying(accessToken);
+                } catch (_) {
+                    throw err;
+                }
+                if (payload === undefined) {
+                    throw err;
+                }
 
-            const timeCreated = sanitizeNumberInput(payload.timeCreated);
-            const expiryTime = sanitizeNumberInput(payload.expiryTime);
+                const timeCreated = sanitizeNumberInput(payload.timeCreated);
+                const expiryTime = sanitizeNumberInput(payload.expiryTime);
 
-            if (expiryTime === undefined || expiryTime < Date.now()) {
-                throw err;
-            }
+                if (expiryTime === undefined || expiryTime < Date.now()) {
+                    throw err;
+                }
 
-            if (timeCreated === undefined) {
-                throw err;
-            }
-
+                if (timeCreated === undefined) {
+                    throw err;
+                }
+                return timeCreated;
+            });
             // If we reached a key older than the token and failed to validate the token,
             // that means it was signed by a key newer than the cached list.
             // In this case we go to the server.
