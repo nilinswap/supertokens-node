@@ -24,7 +24,7 @@ export default class SuperTokens {
         method: HTTPMethod
     ) => Promise<boolean>;
     getAllCORSHeaders: () => string[];
-    getUserCount: (includeRecipeIds?: string[]) => Promise<number>;
+    getUserCount: (includeRecipeIds?: string[] | undefined) => Promise<number>;
     getUsers: (input: {
         timeJoinedOrder: "ASC" | "DESC";
         limit?: number;

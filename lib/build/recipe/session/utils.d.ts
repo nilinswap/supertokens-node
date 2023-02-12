@@ -36,3 +36,4 @@ export declare function attachCreateOrRefreshSessionResponseToExpressRes(
     res: BaseResponse,
     response: CreateOrRefreshAPIResponse
 ): void;
+export declare function handleNonErrorInstance(err: any, handler: (err: any) => any): any;
